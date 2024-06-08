@@ -43,6 +43,26 @@
             by Red Hat" extensions to start using the language server, debugger and formatter
         '';
       };
+
+      fsharp = {
+        path = ./fsharp;
+        welcomeText = ''
+          # welcome to your new fsharp project =)
+
+          - you can create a new simple project by running `dotnet new console --lang f#`
+            inside the dev environment started by `nix develop .`
+        '';
+      };
+
+      csharp = {
+        path = ./csharp;
+        welcomeText = ''
+          # welcome to your new csharp project =)
+
+          - you can create a new simple project by running `dotnet new console` inside
+            the dev environment started by `nix develop .`
+        '';
+      };
     };
   };
 }
