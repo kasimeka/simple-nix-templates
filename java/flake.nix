@@ -19,7 +19,7 @@
 
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [(_: prev: {inherit jdk;})];
+          overlays = [(_: _: {inherit jdk;})];
         };
 
         drv = pkgs.stdenv.mkDerivation {
