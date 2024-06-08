@@ -51,7 +51,7 @@
           inputsFrom = [drv];
           packages = with pkgs; [
             bashInteractive
-            java-language-server
+            # java-language-server # uncomment this for neovim :)
           ];
           shellHook = ''echo "with love from wrd :)"'';
         };
