@@ -66,7 +66,20 @@
 
       elixir = {
         path = ./elixir;
-        welcomeText = ''# welcome to your new elixir project =)'';
+        welcomeText = ''
+          # welcome to your new elixir project =)
+
+          this template provides a typical `mix` based elixir project with no
+          declarative nix packages.
+
+          it also adds two QoL dev dependencies:
+
+          - `credo` which is a linter that can be integrated with vscode & nvim
+          - `mix_completions` which generates shell completions for mix tasks,
+            `mix_completions` doesn't auto-update completions with new tasks,
+            so you need to run `. <(mix complete.bash)` after adding new mix
+            tasks to your project.
+        '';
       };
     };
   };
