@@ -70,9 +70,14 @@
           # welcome to your new elixir project =)
 
           this template provides a typical `mix` based elixir project with no
-          declarative nix packages.
+          declarative nix build system.
 
-          it also adds two QoL dev dependencies:
+          it comes with both `elixir-ls` and `lexical` because i use both lsps
+          to get a more complete experience. though, all elixir LS projects
+          announced they'll merge into one,
+          https://elixir-lang.org/blog/2024/08/15/welcome-elixir-language-server-team
+
+          it also adds two QoL mix packages dependencies:
 
           - `credo` which is a linter that can be integrated with vscode & nvim
           - `mix_completions` which generates shell completions for mix tasks,
