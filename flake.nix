@@ -63,6 +63,11 @@
             the dev environment started by `nix develop .`
         '';
       };
+
+      elixir = {
+        path = ./elixir;
+        welcomeText = ''# welcome to your new elixir project =)'';
+      };
     };
   };
 }
