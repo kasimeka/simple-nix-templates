@@ -11,11 +11,14 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in {
         devShells.default = pkgs.mkShell {
-          packages = with pkgs; [
-            erlang_27
-            (elixir.override {erlang = erlang_27;})
+          packages = with pkgs; let
+            my-erlang = erlang_27;
+          in [
+            my-erlang
+            (elixir.override {erlang = my-erlang;})
             lexical
             elixir-ls
+            inotify-tools # for hot reload
           ];
 
           shellHook = ''
