@@ -32,10 +32,31 @@
           - you can compile and run the project with `nix run .`
           - you can get in the dev environment with `nix develop .`
           - to rename the project:
-            - move `./src/Henlo.java` to `./src/YourNewClassName.java`
+            - rename `./src/Henlo.java` to `./src/YourNewClassName.java`
             - update the main class's name in `./src/YourNewClassName.java` to match the new filename
             - update the `mainClass` field in `./.vscode/launch.json`
-            - update the `pname` variable in `flake.nix`
+            - update the `pname` and `mainClass` variables in `flake.nix`
+
+          inside the dev environment:
+
+          - open the project in VSCode & install the "Debugger for Java" and "Language Support for Java(TM)
+            by Red Hat" extensions to start using the language server, debugger and formatter
+        '';
+      };
+
+      java-graalvm = {
+        path = ./java-graalvm;
+        description = "a graalvm java to native project with no package manager or build system";
+        welcomeText = ''
+          # welcome to your new java-graalvm project =)
+
+          - you can compile and run the project with `nix run .`
+          - you can get in the dev environment with `nix develop .`
+          - to rename the project:
+            - rename `./src/Henlo.java` to `./src/YourNewClassName.java`
+            - update the main class's name in `./src/YourNewClassName.java` to match the new filename
+            - update the `mainClass` field in `./.vscode/launch.json`
+            - update the `pname` and `mainClass` variables in `flake.nix`
 
           inside the dev environment:
 
