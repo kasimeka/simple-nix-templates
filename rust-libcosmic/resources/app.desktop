@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Balalaika
+Comment=description goes here
+Type=Application
+Icon=com.github.kasimeka.balalaika
+Exec=balalaika %F
+Terminal=false
+StartupNotify=true
+Categories=COSMIC
+Keywords=COSMIC
+MimeType=

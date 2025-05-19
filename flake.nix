@@ -107,6 +107,20 @@
             tasks to your project.
         '';
       };
+
+      rust-libcosmic = {
+        path = ./rust-libcosmic;
+        welcomeText = ''
+          # welcome to your new Cosmic Toolkit project =)
+
+          - you can compile and run the project with `nix run .`
+          - you can get in the dev environment with `nix develop .`
+
+          to rename the project find and replace "kasimeka" for author name,
+          "balalaika" for project name and "description goes here" for the app
+          description.
+        '';
+      };
     };
   };
 }
