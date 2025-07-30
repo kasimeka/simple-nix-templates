@@ -1,27 +1,20 @@
 {
   nixConfig.bash-prompt-prefix = ''(elixir) '';
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+  inputs = {
+    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+  };
 
-  outputs = {
-    nixpkgs,
-    flake-utils,
-    ...
-  }:
-    flake-utils.lib.eachDefaultSystem (
+  outputs = inputs:
+    inputs.flake-utils.lib.eachDefaultSystem (
       system: let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = inputs.nixpkgs.legacyPackages.${system};
+        beamPkgs = pkgs.beamMinimal28Packages;
       in {
         devShells.default = pkgs.mkShell {
-          packages = with pkgs; let
-            my-erlang = erlang_27;
-          in [
-            my-erlang
-            (elixir.override {erlang = my-erlang;})
-            lexical
-            elixir-ls
-            inotify-tools # for hot reload
-          ];
+          packages =
+            (with beamPkgs; [erlang elixir_1_19])
+            ++ (with pkgs; [lexical elixir-ls inotify-tools]);
 
           shellHook = ''
             find-project-root () {
