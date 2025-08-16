@@ -30,11 +30,11 @@
               echo "$path"
             }
 
-            mkdir -p .nix-mix
-            mkdir -p .nix-hex
             PROJECT_ROOT="$(find-project-root)"
             export MIX_HOME="$PROJECT_ROOT/.nix-mix"
             export HEX_HOME="$PROJECT_ROOT/.nix-hex"
+            mkdir -p "$MIX_HOME"
+            mkdir -p "$HEX_HOME"
             export PATH="$MIX_HOME/bin:$HEX_HOME/bin:$PATH"
             export LANG=en_US.UTF-8
             export ERL_AFLAGS="-kernel shell_history enabled"
