@@ -14,7 +14,9 @@
         devShells.default = pkgs.mkShell {
           packages =
             (with beamPkgs; [erlang elixir_1_19])
-            ++ (with pkgs; [lexical elixir-ls inotify-tools]);
+            ++ (with pkgs;
+              [lexical elixir-ls]
+              ++ lib.optionals stdenv.isLinux [inotify-tools]);
 
           shellHook = ''
             find-project-root () {
