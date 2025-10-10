@@ -1,21 +1,28 @@
 {
   nixConfig.bash-prompt-prefix = ''(go) '';
 
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    systems.url = "github:nix-systems/default";
+  };
 
-  outputs = inputs:
-    inputs.flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = inputs.nixpkgs.legacyPackages."${system}";
-
-      drv = let
-        pname = "henlo";
-        version = "0.0.0-dev";
-      in
-        pkgs.buildGoModule {
+  outputs = inputs: let
+    forAllSystems = f:
+      inputs.nixpkgs.lib.genAttrs
+      (import inputs.systems)
+      (system: f inputs.nixpkgs.legacyPackages.${system});
+    drv = let
+      pname = "henlo";
+      version = "0.0.0-dev";
+    in
+      {
+        lib,
+        buildGoModule,
+      }:
+        buildGoModule {
           inherit pname version;
 
-          src = with pkgs.lib.fileset;
+          src = with lib.fileset;
             toSource {
               root = ./.;
               fileset = unions [
@@ -29,10 +36,11 @@
 
           __darwinAllowLocalNetworking = true;
         };
-    in {
-      packages.default = drv;
-      devShells.default = pkgs.mkShell {
-        inputsFrom = [drv];
+  in {
+    packages = forAllSystems (pkgs: {default = pkgs.callPackage drv {};});
+    devShells = forAllSystems (pkgs: {
+      default = pkgs.mkShell {
+        inputsFrom = [inputs.self.packages.${pkgs.system}.default];
         packages = with pkgs; [
           bashInteractive
           gofumpt
@@ -48,4 +56,5 @@
         '';
       };
     });
+  };
 }

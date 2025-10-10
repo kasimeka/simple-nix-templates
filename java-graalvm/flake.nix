@@ -1,67 +1,104 @@
 {
-  nixConfig.bash-prompt-prefix = ''\[\e[0;31m\](java) \e[0m'';
-  description = "graalvm JDK 21 env";
+  nixConfig.bash-prompt-prefix = ''(graal) '';
 
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    systems.url = "github:nix-systems/default";
+  };
 
-  outputs = {
-    self,
-    nixpkgs,
-    flake-utils,
-  }:
-    flake-utils.lib.eachDefaultSystem (
-      system: let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [(_: _: {inherit jdk jre;})];
-        };
-        jdk = pkgs.graalvmPackages.graalvm-ce-musl;
-        jre = pkgs.graalvmPackages.graalvm-ce-musl;
-        graalvmDrv = pkgs.graalvmPackages.graalvm-ce-musl;
+  outputs = inputs: let
+    forAllSystems = f:
+      inputs.nixpkgs.lib.genAttrs
+      (import inputs.systems)
+      (system: f inputs.nixpkgs.legacyPackages.${system});
 
-        pname = "henlo";
-        version = "0.0.0-dev";
-        mainClass = "Henlo";
-        drv = pkgs.buildGraalvmNativeImage {
-          inherit pname version graalvmDrv;
-          src = "${jar}/share/java/${pname}.jar";
-          extraNativeImageBuildArgs = ["--static" "--libc=musl" "-march=native"];
-        };
-        jar = pkgs.stdenv.mkDerivation {
-          inherit pname version;
-          src = ./src;
+    pname = "henlo";
+    version = "0.0.0-dev";
+    mainClass = "Henlo";
 
-          buildInputs = [jre];
-          nativeBuildInputs = [jdk pkgs.stripJavaArchivesHook];
-
-          buildPhase = ''find . -name '*.java' -type f -exec javac -d build/ {} +'';
-          installPhase = ''
-            (cd build && jar cvfe $out/share/java/${pname}.jar ${mainClass} *)
-            mkdir -p $out/bin && cat <<EOF > $out/bin/${pname}
-            #!usr/bin/env sh
-            JAVA_HOME=${jre} exec ${jre}/bin/java -jar $out/share/java/${pname}.jar "\$@"
-            EOF
-            chmod +x $out/bin/${pname}
-          '';
-          meta.mainProgram = pname;
-        };
-      in {
-        packages = {
-          default = self.packages.${system}.native;
-          native = drv;
-          jvm = jar;
-        };
-        devShell = pkgs.mkShell {
-          inputsFrom = [jar drv];
-          packages = with pkgs; [
-            bashInteractive
-            # uncomment for neovim :)
-            # google-java-format
-            # java-language-server
+    native = {
+      lib,
+      system,
+      buildGraalvmNativeImage,
+      graalvmDrv ? graalvm-ce,
+      useMusl ? stdenv.isLinux,
+      graalvm-ce,
+      stdenv,
+    }:
+      buildGraalvmNativeImage {
+        inherit pname version;
+        graalvmDrv = graalvmDrv.override {inherit useMusl;};
+        src = "${inputs.self.packages.${system}.jvm}/share/java/${pname}.jar";
+        extraNativeImageBuildArgs =
+          ["-march=native"]
+          ++ lib.optionals useMusl [
+            "--static"
+            "--libc=musl"
           ];
-          shellHook = ''echo "with love from wrd :)"'';
-        };
-      }
-    );
+        meta.mainProgram = pname;
+      };
+
+    jvm = {
+      stdenv,
+      jdk,
+      jre ? jre_minimal,
+      stripJavaArchivesHook,
+      jre_minimal ? null,
+    }:
+      stdenv.mkDerivation {
+        inherit pname version;
+        src = ./src;
+
+        buildInputs = [jre];
+        nativeBuildInputs = [jdk stripJavaArchivesHook];
+
+        buildPhase = ''find . -name '*.java' -type f -exec javac -d build/ {} +'';
+        installPhase = ''
+          (cd build && jar cvfe $out/share/java/${pname}.jar ${mainClass} *)
+          mkdir -p $out/bin && cat <<EOF > $out/bin/${pname}
+          #!usr/bin/env sh
+          JAVA_HOME=${jre} exec ${jre}/bin/java -jar $out/share/java/${pname}.jar "\$@"
+          EOF
+          chmod +x $out/bin/${pname}
+        '';
+        meta.mainProgram = pname;
+      };
+  in {
+    packages = forAllSystems (pkgs: let
+      graalvmDrv = pkgs.graalvm-ce.override {useMusl = pkgs.stdenv.isLinux;};
+    in {
+      default = inputs.self.packages.${pkgs.system}.native;
+      native = pkgs.callPackage native {inherit graalvmDrv;};
+      jvm = pkgs.callPackage jvm {
+        jdk = graalvmDrv;
+        jre = graalvmDrv;
+      };
+    });
+
+    devShells = forAllSystems (pkgs: {
+      default = pkgs.mkShell {
+        # grab all build dependencies of all exposed packages
+        inputsFrom = pkgs.lib.attrValues inputs.self.packages.${pkgs.system};
+        packages = with pkgs; [
+          bashInteractive
+          checkstyle
+          # uncomment for neovim :)
+          /*
+          google-java-format
+          (java-language-server.overrideMavenAttrs (_: {
+            buildOffline = true;
+            mvnHash = "sha256-kSoWd3r37bK/MYG8FKj6Kj3Z2wlHrSsDv3NdxbvhsaA=";
+            src = fetchFromGitHub {
+              owner = "nya3jp";
+              repo = "java-language-server";
+              rev = "0b256dfbe5e126112a90b70537b46b4813be6b93";
+              hash = "sha256-6lIEavMxuIaxT6WjlYinP4crSyyVuMMtsUHXuVhvBRM=";
+            };
+          }))
+          */
+        ];
+        shellHook = ''echo "with love from wrd :)"'';
+      };
+    });
+  };
 }
