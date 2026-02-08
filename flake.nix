@@ -121,6 +121,8 @@
           description.
         '';
       };
+
+      zig.path = ./zig;
     };
   };
 }
