@@ -16,7 +16,7 @@
     in {
       default = pkgs.mkShell {
         packages =
-          (with beamPkgs; [erlang elixir_1_19])
+          (with beamPkgs; [erlang elixir_1_20])
           ++ (with pkgs;
             [lexical elixir-ls]
             ++ lib.optionals stdenv.isLinux [inotify-tools]);
